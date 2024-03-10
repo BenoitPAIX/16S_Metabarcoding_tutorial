@@ -308,7 +308,7 @@ How many non-prokaryotic ASVs were filtered in total?
   <summary>See the answer</summary>
   
   ```
-ntaxa(physeq_dectontam) - ntaxa(physeq_filtered)
+ntaxa(physeq_decontam) - ntaxa(physeq_filtered)
   ```
 1002 ASVs in total
 </details>
