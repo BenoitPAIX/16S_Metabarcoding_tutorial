@@ -490,6 +490,21 @@ data_alpha_all = cbind(metadata_subsampled[, c("Sampling_site","Sampling_date")]
 data_alpha_all
 ```
 
+What if I don't want to include all the samples in my analysis? (just only 3 of the 6 months for example)
+
+<details>
+  <summary>See the answer</summary>
+To plot your alpha diversity results if you want to include just a specific selection of samples, use the subset function
+
+```
+data_alpha_all_subset = subset(data_alpha_all, Sample_type == "3. Cultivated sponges" | Sample_type == "2. Gemmules"  )
+data_alpha_all_subset 
+```
+
+</details>
+
+### 4.4. Generate a single figure for the 3 alpha-diversity indices together
+
 To have the three diversity indices (Shannon, Chao1 and Pielou) in different facets, we need to re-arrange the data.frame with a single column for all values
 
 ```
@@ -498,8 +513,7 @@ colnames(data_alpha_bgs_long) <- c("Region_site", "Index", "Values")
 data_alpha_bgs_long
 ```
 
-We can now generate a single figure for the 3 indices together
-
+We can now make boxplots using ggplot2 with facet_grid for the figure
 ```
 plot_alpha_bgs = ggplot(data_alpha_bgs_long, aes(Region_site ,Values, fill = Region_site))
 plot_alpha_bgs = plot_alpha_bgs + geom_boxplot(alpha = 0.8, size = 1) + facet_grid(  Index ~ ., scales="free") 
@@ -509,8 +523,21 @@ plot_alpha_bgs = plot_alpha_bgs + theme(legend.position="left")
 plot_alpha_bgs = plot_alpha_bgs + theme(axis.title.x = element_blank(),axis.title.y = element_blank())
 plot_alpha_bgs = plot_alpha_bgs + theme(axis.text.x = element_text(angle=45, vjust = 1, hjust = 1))
 plot_alpha_bgs = plot_alpha_bgs + scale_fill_manual(values = colorpal_site)
-plot_alpha_bgs 
+plot_alpha_bgs
+
+ggsave(filename = "Plot_alpha_Q1.pdf", 
+       plot = plot_alpha_Q1, 
+       device = "pdf" , 
+       width = 15 , height = 25, units = "cm", 
+       path = "./2_Alpha_div_results")
 ```
+
+
+
+
+
+### 4.5. Test the normality of your distribution for each index
+
 
 
 
