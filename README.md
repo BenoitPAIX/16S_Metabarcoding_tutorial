@@ -8,7 +8,7 @@
 ### 1.2 Package installation
 First, some packages need to be installed.
 
-For some of packages, the installation needs to go through BiocManager
+For some of the packages, the installation needs to go through BiocManager
 ```
 if (!requireNamespace("BiocManager", quietly = TRUE)) {install.packages("BiocManager")}
 ```
@@ -128,7 +128,7 @@ Using the dim() make sure that the dimension of each dataset is correct.
 - The number of rows should be the same for the ASV_table and Taxonomy_table
 - The number of columns should be the same for the ASV_table and Metadata_table
 
-Optional : if you have a tree file you can also import it for phyloseq
+Optional: if you have a tree file you can also import it for phyloseq
 
 ```
 TREE_file = read_tree("Tree-file.nwk.nhx")
@@ -136,7 +136,7 @@ TREE_file
 ```
 
 ### 2.2. Create your main phyloseq object (output: physeq_raw)
-Phyloseq is a package which allows you to generate a single object combining the ASV_table, the TAX_table, and the META_table (and optionally the TREE_file).
+Phyloseq is a package that allows you to generate a single object combining the ASV_table, the TAX_table, and the META_table (and optionally the TREE_file).
 
 Using a phyloseq object makes your life more simple, as every manipulation of the dataset will be done on each tables. 
 
@@ -189,7 +189,7 @@ min(taxa_sums(physeq_raw))
 max(taxa_sums(physeq_raw))
 mean(taxa_sums(physeq_raw))
   ```
-We have around XXX ASVs in average. XX in max, and XX in min (probably an extraction blank or negative control) 
+We have around XXX ASVs on average. XX in max, and XX in min (probably an extraction blank or negative control) 
 </details>
 
 ### 2.2. Decontaminate your dataset using the decontam package (output: physeq_decontam)
@@ -223,7 +223,7 @@ contam_prev05 = cbind(as.data.frame(tax_table(physeq_raw)) , contam_prev05)
 contam_prev05
 
  ```
-Based on these results, how many contaminants were identified ? Are the abundant in the dataset ? 
+Based on these results, how many contaminants were identified? Are they abundant in the dataset? 
 
 <details>
   <summary>See the answer</summary>
@@ -357,11 +357,14 @@ Save it as a RDS object to avoid all these steps in a future session!
   ```
 saveRDS(physeq_subsampled, "Physeq_subsampled.RDS")
   ```
+When you start a new session (few days later for example), here is how to load the phyloseq object again
 
+  ```
+physeq_subsampled = readRDS("Physeq_subsampled.RDS")
+physeq_subsampled
+  ```
 
 ## 3. Before stating starting the analyses, let's see why the dataset should be transformed
-
-Disclaimer on the rarefaction of 16S metabarcoding datasets
 
 Rarefying your datasets means that in every sample, you will randomly remove ASVs counts until they reach the same number of ASVs of the sample with the lower size. 
 
@@ -407,7 +410,7 @@ As explained just before, we will rarefy our dataset, so all samples will end up
 physeq_rarefied = rarefy_even_depth(physeq_subsampled)
 physeq_rarefied
   ```
-How many ASVs per sample do we end up? 
+How many ASVs per sample do we end up with? 
 
 <details>
   <summary>See the answer</summary>
@@ -420,9 +423,71 @@ sample_sums(physeq_subsampled)
 </details>
 
 
-### 4.2. Consider the factors of comparison for this analysis and prepare color vectors
+### 4.2. Consider the factors of comparison for this analysis and prepare your color vectors
 
-Before plotting the alpha diversity, let's go back to the metadata
+Before plotting the alpha diversity, let's go back to the current metadata
+
+  ```
+metadata_subsampled = sample_data(physeq_subsampled)
+metadata_subsampled
+  ```
+
+What factor of interest is important to compare in this dataset? How many levels (groups) there is in these factors?
+<details>
+  <summary>See the answer</summary>
+
+- For the temporal changes: the sampling date
+
+```
+factor(metadata_subsampled$Sampling_date)
+```
+We have 6 distinct sampling dates
+
+- For the spatial comparison: the sampling site
+
+```
+factor(metadata_subsampeld$Sampling_site)
+```
+We have 5 distinct sampling sites
+
+</details>
+
+Let's create the color vector for the sampling dates. 
+
+For temporal changes, I like to have my colors changing gradually from a cold color for the cold months, to hot colors for the warmer months
+
+```
+color_months = c("M1 February" = "Violet",
+                 "M2 March" = "SkyBlue",
+                 "M3 April" = "LightGreen",
+                 "M4 May" = "Yellow",
+                 "M5 June" = "Orange",
+                 "M6 July" = "Red")
+```
+
+### 4.3. Create a data frame with the results of the alpha-diversity indices and the metadata
+
+The function estimate_richness allow you to calculate many different alpha-diversity indices. 
+
+Here we will keep only the observed richness, the Shannon index and the Chao1 (estimated richness)
+
+```
+data_alpha = estimate_richness(physeq_rarefied , measures = c("Observed", "Shannon", "Chao1"))
+data_alpha
+```
+
+Unfortunately, phyloseq does not provide the Pielou index, so we have to add it to calculate it with this formula
+```
+Pielou = data_alpha$Shannon / log(data_alpha$Observed)
+Pielou
+```
+
+We can now add the Pielou index and the factors of interest in the data frame
+```
+data_alpha_all = cbind(metadata_subsampled[, c("Sampling_site","Sampling_date")], data_alpha , Pielou)
+data_alpha_all
+```
+The alpha diversity indices are now ready to be plotted with the data_alpha_all data frame
 
 
 
