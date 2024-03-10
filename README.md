@@ -5,21 +5,23 @@
 
 ## Package installation
 First, some packages need to be installed.
+
 For some of packages, the installation needs to go through BiocManager
 ```
 if (!requireNamespace("BiocManager", quietly = TRUE)) {install.packages("BiocManager")}
 ```
 
-For the whole workflow, two main packages are necessary: phyloseq and microbiome
-https://joey711.github.io/phyloseq/
-https://microbiome.github.io/tutorials/
+For the whole workflow, two main packages are necessary: 
 
+- [phyloseq](https://joey711.github.io/phyloseq/)
+  
+- [microbiome](https://microbiome.github.io/tutorials/)
 
 ```
-
-
 BiocManager::install("phyloseq")
 BiocManager::install("microbiome")
+```
+
 
 
 BiocManager::install("decontam") #for decontamination of the dataset
