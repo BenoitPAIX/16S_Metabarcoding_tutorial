@@ -209,7 +209,7 @@ ggsave(filename = "Plot_libsize.pdf",
        plot = plot_libsize, 
        device = "pdf" , 
        width = 15 , height = 10, units = "cm", 
-       path = "./1. Data_prep results")
+       path = "./1_Data_prep_results")
  ```
 Based on the figure, we can observe that the control samples (negative controls and extraction blanks) have a library size significantly lower compared to most of our true samples.
 
@@ -240,7 +240,7 @@ Most of them have a low prevalence in our dataset (which is good)
 
 Now, let's save this information in a csv file, if we need to go back later on these contamination results 
   ```
-write.csv(contam_prev05, file.path("./1. Data_prep results" , "Contamination_table_prev05.csv"))
+write.csv(contam_prev05, file.path("./1_Data_prep_results" , "Contamination_table_prev05.csv"))
   ```
 
 We can now make a plot of the prevalence of the contaminants ASV in the controls and true samples
@@ -271,7 +271,7 @@ ggsave(filename = "Plot_prevalence.pdf",
        plot = plot_prevalence, 
        device = "pdf" , 
        width = 15 , height = 10, units = "cm", 
-       path = "./1. Data_prep results")
+       path = "./1_Data_prep_results")
  ```
 
 We can finally make our phyloseq object without these contaminants
@@ -407,6 +407,8 @@ For all the rest of the analyses (beta-diversity and composition), I prefer to k
 
 As explained just before, we will rarefy our dataset, so all samples will end up with the same number of reads in total.
   ```
+min(sample_sums(physeq_subsampled))
+
 physeq_rarefied = rarefy_even_depth(physeq_subsampled)
 physeq_rarefied
   ```
@@ -487,10 +489,28 @@ We can now add the Pielou index and the factors of interest in the data frame
 data_alpha_all = cbind(metadata_subsampled[, c("Sampling_site","Sampling_date")], data_alpha , Pielou)
 data_alpha_all
 ```
-The alpha diversity indices are now ready to be plotted with the data_alpha_all data frame
 
+To have the three diversity indices (Shannon, Chao1 and Pielou) in different facets, we need to re-arrange the data.frame with a single column for all values
 
+```
+data_alpha_bgs_long = melt(data_alpha_bgs, id.var=c("Region_site"))
+colnames(data_alpha_bgs_long) <- c("Region_site", "Index", "Values")
+data_alpha_bgs_long
+```
 
+We can now generate a single figure for the 3 indices together
+
+```
+plot_alpha_bgs = ggplot(data_alpha_bgs_long, aes(Region_site ,Values, fill = Region_site))
+plot_alpha_bgs = plot_alpha_bgs + geom_boxplot(alpha = 0.8, size = 1) + facet_grid(  Index ~ ., scales="free") 
+plot_alpha_bgs = plot_alpha_bgs + geom_point(size = 2, alpha = 0.8, pch = 21, stroke = 1)
+plot_alpha_bgs = plot_alpha_bgs + theme_bw(base_size = 15) 
+plot_alpha_bgs = plot_alpha_bgs + theme(legend.position="left")
+plot_alpha_bgs = plot_alpha_bgs + theme(axis.title.x = element_blank(),axis.title.y = element_blank())
+plot_alpha_bgs = plot_alpha_bgs + theme(axis.text.x = element_text(angle=45, vjust = 1, hjust = 1))
+plot_alpha_bgs = plot_alpha_bgs + scale_fill_manual(values = colorpal_site)
+plot_alpha_bgs 
+```
 
 
 
