@@ -1,4 +1,4 @@
-# Tutorial_16S_metabarcoding_analyses
+# Tutorial for metabarcoding analyses with 16S rRNA gene amplicons
 
 ## 1. Getting ready to start with R
 
