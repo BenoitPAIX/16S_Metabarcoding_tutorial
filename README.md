@@ -1,7 +1,7 @@
 # Tutorial_16S_metabarcoding_analyses
 
 ## Overall workflow
-
+![alt text](Workflow.PNG)
 
 ## Package installation
 First, some packages need to be installed.
