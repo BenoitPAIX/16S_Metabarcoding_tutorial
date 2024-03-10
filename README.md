@@ -158,7 +158,7 @@ physeq_raw
 Optional: your TREE_file can also be added in the phyloseq object
 ```
 TREE_phylo = phy_tree(TREE_file)
-physeq_raw_tree = merge_phyloseq(physeq_raw, random_tree)
+physeq_raw_tree = merge_phyloseq(physeq_raw, TREE_phylo)
 physeq_raw_tree
 ```
 Your raw phyloseq object is now ready. 
