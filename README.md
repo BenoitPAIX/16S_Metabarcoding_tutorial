@@ -534,12 +534,32 @@ ggsave(filename = "Plot_alpha_Q1.pdf",
 
 
 
-
-
 ### 4.5. Test the normality of your distribution for each index
 
 
+### 4.6. Test the differences of alpha-diversity according to your factors with analyses of variances
 
 
+### 4.7. Test the differences between groups with pairwise comparisons
+
+## 5. Beta diversity analyses
+
+### 5.1. Create a phyloseq compositional objects specifically for beta-div and compositional analyses
 
 
+### 5.2. Consider the factors of comparison for this analysis and prepare your color and shape vectors
+
+### 5.3. NMDS analysis and beta-diversity tests
+
+#### 5.3.1. Create a data frame with the results of the NMDS analysis
+
+
+#### 5.3.2. Plot your NMDS analysis
+
+### 5.4. Beta-diversity dispersion analysis 
+
+### 5.5. Environmental parameters as explanatory factors of the beta-diversity
+
+### 5.5.1. db-RDA analysis 
+
+### 5.5.2. Variance partitioning
