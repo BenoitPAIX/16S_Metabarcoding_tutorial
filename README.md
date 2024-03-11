@@ -913,6 +913,73 @@ You can use the same script as the stats for the alpha-diversity !
 
 ### 5.5. db-RDA analysis to indentify environmental parameters as explanatory factors of the beta-diversity
 
+Let's perform a db-RDA with the vegan package. For this we will need the distance matrix of the compositional dataset and the metadata which include the environmental parameters
+
+Good news, we already have these two data frames! Can you find them back from above ? 
+
+<details>
+  <summary>See the answer</summary>
+
+```
+data_distbeta
+metadata_subsampled
+```
+</details>
+
+Now let's consider the important environmental parameters for our analysis. In this case, our choice goes to  the temperature, salinity, silicates, phosphate, and the filtered fraction of the copper. We can perform the db-RDA analysis based on a model whiçch include all of these parameters
+
+```
+dbrda_result <- capscale(data_distbeta~ Temperature + Salinity + SIOH4 + PO4 + Cu_F, metadata_subsampled)
+dbrda_result
+```
+
+We can now test the significance of the model used
+
+```
+anova.cca(dbrda_result, step = 999)
+```
+
+Ok, the model is significant, now let's plot the db-RDA. For a good graphical output (using ggplot2) some data need to be extracted first. The coordinates of the two axes, but also the coordinates for the vectors related to each environmental parameters. 
+
+```
+dbrda_result_scores <- scores(dbrda_result, display = "sites")
+dbrda_result_scores <- as.data.frame(dbrda_result_scores)
+dbrda_result_scores
+
+dbrda_result_scores_metadata <- cbind(dbrda_result_scores, metadata_subsampled)
+dbrda_result_scores_metadata
+
+dbrda_result_arrow <- scores(dbrda_result, display = "bp")
+dbrda_result_arrow <- as.data.frame(dbrda_result_arrow)
+dbrda_result_arrow
+```
+
+Based on these data extracted from the db-RDA analysis, we can now plot using ggplot2
+
+```
+plot_rda <- ggplot(dbrda_result_scores_metadata, aes(x = CAP1 , y = CAP2))
+plot_rda <- plot_rda + geom_point(aes(pch = Site,  fill = Month), size = 5, alpha = 0.8)
+plot_rda <- plot_rda + scale_shape_manual(values = shape_sites)
+plot_rda <- plot_rda + scale_fill_manual(values = color_months)
+plot_rda <- plot_rda + geom_segment(data = dbrda_result_arrow, aes(x=0, y=0, xend= CAP1, yend = CAP2), color = "black", arrow = arrow(length = unit(0.03, "npc")), linewidth = 1 , alpha = 0.7)
+plot_rda <- plot_rda + theme_bw(base_size = 15)+ theme(plot.title = element_text(size=22, face="bold"), axis.text=element_text(size=12),axis.title=element_text(size=14))
+plot_rda <- plot_rda + geom_text(data = dbrda_result_arrow, aes(x=1.1*CAP1, y=1.1*CAP2), label = row.names(dbrda_result_arrow), color = "black", cex = 6)
+plot_rda
+
+ggsave(filename = "Plot_rda.pdf", 
+       plot = plot_rda, 
+       device = "pdf" , 
+       width = 25 , height = 20, units = "cm", 
+       path = "./3_Beta_div_results")
+```
+
+<details>
+  <summary>See figure</summary>
+  
+![alt text](3_Beta_div_results/Plot_rda.png)
+
+</details>
+
 
 
 ### 5.6. Variance partitioning
