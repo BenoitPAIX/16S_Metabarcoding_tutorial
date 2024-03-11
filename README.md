@@ -276,7 +276,7 @@ plot_prevalence = plot_prevalence + geom_point()
 plot_prevalence = plot_prevalence + xlab("Prevalence (Negative Controls)") + ylab("Prevalence (True Samples)")
 plot_prevalence
  ```
-Conclusion: the contaminants are mostly prevalent in the negative controls and not in the true samples! The results are ok !
+Conclusion: the contaminants are mostly prevalent in the negative controls and not in the true samples! The results are ok!
 
 We can save this plot, as a figure to confirm the quality of our decontamination
  ```
@@ -299,7 +299,7 @@ We can finally make our phyloseq object without these contaminants
 physeq_decontam = prune_taxa(!contam_prev05$contaminant, physeq_raw)
 physeq_decontam
  ```
-Do you confirm that the good number of contaminating ASVs has been removed ? 
+Do you confirm that the right number of contaminating ASVs has been removed? 
 <details>
   <summary>See the answer</summary>
   
@@ -336,7 +336,7 @@ ntaxa(physeq_decontam) - ntaxa(physeq_filtered)
 ### 2.4. Checking the rarefaction curves and removing samples with not enough reads 
 Rarefactions curves are a good representation to verify if all the diversity is covered in each sample. 
 
-On the x axis we have the number of reads, on the y axis, the number of new ASVs discovered. 
+On the x-axis we have the number of reads, on the y-axis, the number of new ASVs discovered. 
 
 If we reach a plateau, it means that no more new ASVs are identified, even if we increase or sample size (number of reads).
 
@@ -387,7 +387,7 @@ Save it as a RDS object to avoid all these steps in a future session!
   ```
 saveRDS(physeq_subsampled, "Physeq_subsampled.RDS")
   ```
-When you start a new session (few days later for example), here is how to load the phyloseq object again
+When you start a new session (a few days later for example), here is how to load the phyloseq object again
 
   ```
 physeq_subsampled = readRDS("Physeq_subsampled.RDS")
@@ -603,7 +603,7 @@ write.csv(shapiro_data_alpha, file.path("./2_Alpha_div_results" , "Shapiro_data_
 ```
 Based on these results, all p values are < 0.05, implying that the distribution of the data is significantly different from normal distribution. 
 
-In other words, we cannot assume the normality. The Kruskal-wallis test need to be used (instead of a parametric ANOVA)
+In other words, we cannot assume the normality. The Kruskal-Wallis test need to be used (instead of a parametric ANOVA)
 
 
 ### 4.6. Test the differences of alpha-diversity according to your factors with analyses of variances
@@ -620,7 +620,7 @@ data_kruskal_Chao1_month
 data_kruskal_Pielou_month = kruskal.test(Pielou ~ Month, data_alpha_all)
 data_kruskal_Pielou_month 
 ```
-We can now create a table summarizing these informations all together
+We can now create a table summarizing these information all together
 
 ```
 data_kruskal_alpha_month  <- matrix(nrow = 3 ,  ncol=3, byrow=TRUE)
@@ -645,7 +645,7 @@ data_kruskal_alpha_month
 
 write.csv(data_kruskal_alpha_month, file.path("./2_Alpha_div_results" , "Data_kruskal_alpha_month.csv"))
 ```
-Conclusion: For each alpha-diversity index, there is significant differences across time.
+Conclusion: For each alpha-diversity index, there are significant differences across time.
 
 What about the spatial differences?
 
@@ -687,7 +687,7 @@ data_kruskal_alpha_site
 write.csv(data_kruskal_alpha_site, file.path("./2_Alpha_div_results" , "Data_kruskal_alpha_site.csv"))
 
 ```
-Conclusion: for the three indices there is no differences between sites
+Conclusion: for the three indices there are no differences between the sites
 
 </details>
 
@@ -703,7 +703,7 @@ data_wilcox_shannon_month$p.value
 ```
 
 We can now create a table summarizing these results. 
-This table should include the lowercase indices ("a", "b", "c", ...) allowing to easily identify the significant groups with the boxplots.
+This table should include the lowercase indices ("a", "b", "c", ...) allowing us to easily identify the significant groups with the boxplots.
 
 ```
 data_wilcox_shannon_month_full = fullPTable(data_wilcox_shannon_month$p.value)
@@ -724,7 +724,7 @@ data_wilcox_shannon_month_full2
 write.csv(data_wilcox_shannon_month_full2, file.path("./2_Alpha_div_results" , "Data_wilcox_shannon_month.csv"))
 ```
 
-Now let's do the same with the Pielou and the Chao1 indices !
+Now let's do the same with the Pielou and the Chao1 indices!
 
 
 <details>
@@ -747,7 +747,7 @@ physeq_compo <- transform(physeq_subsampled, "compositional")
 physeq_compo
 ```
 
-How the data look like in the ASV_table now ? What is the sum of all ASVs in a sample ?
+How does the data look like in the ASV_table now? What is the sum of all ASVs in a sample?
 
 <details>
   <summary>See the answer</summary>
@@ -830,7 +830,7 @@ Let's check again the metadata
 metadata_subsampled <- as(sample_data(physeq_compo), "data.frame")
 metadata_subsampled
 ```
-We have two factors of comparison that can interact each other (Month and Site). So a two-way PERMANOVA test (aka two-way Adonis test) is required. 
+We have two factors of comparison that can interact with each other (Month and Site). So a two-way PERMANOVA test (aka two-way Adonis test) is required. 
 
 ```
 data_permnova = adonis2(data_distbeta ~ Month*Site, data = metadata_subsampled)
@@ -840,9 +840,9 @@ write.csv(as.data.frame(data_permnova),
           file.path("./3_Beta_div_results" , "Data_twoway_permnova.csv"))
  
 ```
-Conclusion: there are significant differences according to the sampling time and site. Both factors are interacting each other in a significant way. 
+Conclusion: there are significant differences according to the sampling time and site. Both factors interact with each other in a significant way. 
 
-We can now perform multivariate pairwise comparison to check which months are different from each other. Same for the sites. 
+We can now perform multivariate pairwise comparisons to check which months are different from each other. Same for the sites. 
 
 ```
 data_pairwiseadonis_month = pairwise.adonis(data_distbeta, metadata_subsampled$Month)
@@ -863,7 +863,7 @@ write.csv(data_pairwiseadonis_month,
 
 The beta-diversity dispersion analysis allows you to calculate the dispersion within groups of samples. It can help to confirm visual observation based on the NMDS plots, when you observe that some groups have replicates more dispersed than others. 
 
-Let's calculate the beta-dispersion based on the distance to centroids within each group (1 group of replicate is a sampling at a specific time on the specific site) 
+Let's calculate the beta-dispersion based on the distance to centroids within each group (1 group of replicate is one sampling at a specific time on the specific site) 
 
 ```
 betadisper_result <- betadisper(distance(physeq_compo, method="bray"), data_nmds$Month_site)
@@ -911,11 +911,11 @@ You can use the same script as the stats for the alpha-diversity !
 </details>
 
 
-### 5.5. db-RDA analysis to indentify environmental parameters as explanatory factors of the beta-diversity
+### 5.5. db-RDA analysis to identify environmental parameters as explanatory factors of the beta-diversity
 
-Let's perform a db-RDA with the vegan package. For this we will need the distance matrix of the compositional dataset and the metadata which include the environmental parameters
+Let's perform a db-RDA with the vegan package. For this, we will need the distance matrix of the compositional dataset and the metadata which include the environmental parameters
 
-Good news, we already have these two data frames! Can you find them back from above ? 
+Good news, we already have these two data frames! Can you find them back from above? 
 
 <details>
   <summary>See the answer</summary>
@@ -926,7 +926,7 @@ metadata_subsampled
 ```
 </details>
 
-Now let's consider the important environmental parameters for our analysis. In this case, our choice goes to  the temperature, salinity, silicates, phosphate, and the filtered fraction of the copper. We can perform the db-RDA analysis based on a model whiçch include all of these parameters
+Now let's consider the important environmental parameters for our analysis. In this case, our choice goes to  the temperature, salinity, silicates, phosphate, and the filtered fraction of the copper. We can perform the db-RDA analysis based on a model that include all of these parameters
 
 ```
 dbrda_result <- capscale(data_distbeta~ Temperature + Salinity + SIOH4 + PO4 + Cu_F, metadata_subsampled)
@@ -939,7 +939,7 @@ We can now test the significance of the model used
 anova.cca(dbrda_result, step = 999)
 ```
 
-Ok, the model is significant, now let's plot the db-RDA. For a good graphical output (using ggplot2) some data need to be extracted first. The coordinates of the two axes, but also the coordinates for the vectors related to each environmental parameters. 
+Ok, the model is significant, now let's plot the db-RDA. For a good graphical output (using ggplot2) some data need to be extracted first. The coordinates of the two axes, but also the coordinates for the vectors related to each environmental parameter. 
 
 ```
 dbrda_result_scores <- scores(dbrda_result, display = "sites")
@@ -954,7 +954,7 @@ dbrda_result_arrow <- as.data.frame(dbrda_result_arrow)
 dbrda_result_arrow
 ```
 
-Based on these data extracted from the db-RDA analysis, we can now plot using ggplot2
+Based on the data extracted from the db-RDA analysis, we can now plot using ggplot2
 
 ```
 plot_rda <- ggplot(dbrda_result_scores_metadata, aes(x = CAP1 , y = CAP2))
@@ -982,7 +982,7 @@ ggsave(filename = "Plot_rda.pdf",
 
 ### 5.6. Variance partitioning
 
-The variance partitioning analysis allows you to determine the relative contribution of each environmental parameters (or group of parameters) as explanatory factors of the beta-diversity variance. 
+The variance partitioning analysis allows you to determine the relative contribution of each environmental parameter (or group of parameters) as explanatory factors of the beta-diversity variance. 
 
 As for the db-RDA, we will perform the analysis first with vegan using the distance matrix and the metadata
 
@@ -1004,7 +1004,7 @@ X2 corresponds to the copper-filtered
 
 X3 corresponds to phosphate and silicates
 
-The results on the venn diagrams indicate the percentage explained by each group, independently or combined. 
+The results on the Venn diagrams indicate the percentage explained by each group, independently or combined. 
 
 The residual variance unexplained reach 70%
 
@@ -1015,7 +1015,7 @@ The residual variance unexplained reach 70%
 
 ### 6.1. Barplots at the family level
 
-For compositional analyses, I have a personal preference for barplots instead of heatmaps or bubble plots, as I find difficult to compare different values just based on a colors (for the heatmaps) are circle area (bubble plots). 
+For compositional analyses, I have a personal preference for barplots instead of heatmaps or bubble plots, as I find it difficult to compare different values just based on colors (for the heatmaps) are circle area (bubble plots). 
 
 One of the difficult parts of the compositional representation is related to the high number of variables. Of course, making barplots at the ASVs or genus level will make the figure very messy, with too many variables. One solution is to make barplots at the family levels, and combine all the rare families into a single group named "others". 
 
@@ -1037,7 +1037,7 @@ tax_table_family$Family
 
 ```
 
-We can create a color vector, based on the affiliation of the families. For example different orange colors for Bacteroidetes, green colors for Gammaproteobacteria and blue colors for Alphaproteobacteria
+We can create a color vector, based on the affiliation of the families. For example different orange colors for Bacteroidetes, green colors for Gammaproteobacteria, and blue colors for Alphaproteobacteria
 
 
 ```
@@ -1155,7 +1155,7 @@ In this study, we will focus on the spatial-temporal core community, always pres
 
 We can use the microbiome package to make a new phyloseq object specifically subsetting this core community. 
 
-A prevalence threshold of 90% will allow to keep ASVs present at least in 90% of the samples. All others ASVs (not core) will be excluded from the dataset. 
+A prevalence threshold of 90% will allow us to keep ASVs present at least in 90% of the samples. All other ASVs (not core) will be excluded from the dataset. 
 
 The choice of this threshold depends on your dataset (the relation between your samples) and the number of samples
 
@@ -1182,7 +1182,7 @@ tax_table(physeq_core)
 
 The relative abundance of sequences you core ASV can be plotted using barplots at the family level. 
 
-As there is only 63 core ASVs, the plots could also be plotted the genus level and might not be too dense. 
+As there is only 63 core ASVs, the plots could also be plotted at the genus level and might not be too dense. 
 
 
 ```
