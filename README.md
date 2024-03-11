@@ -211,6 +211,15 @@ ggsave(filename = "Plot_libsize.pdf",
        width = 15 , height = 10, units = "cm", 
        path = "./1_Data_prep_results")
  ```
+
+
+<details>
+  <summary>See figure</summary>
+  
+![alt text](1_Data_prep_results/Plot_libsize.png)
+
+</details>
+
 Based on the figure, we can observe that the control samples (negative controls and extraction blanks) have a library size significantly lower compared to most of our true samples.
 
 Let's now identify the contaminants using the prevalence method
@@ -231,7 +240,7 @@ Based on these results, how many contaminants were identified? Are they abundant
   ```
 table(contam_prev05$contaminant)
   ```
-We have identified 23 ASVs as contaminants. 
+We have identified 5 ASVs as contaminants. 
   ```
 subset(contam_prev05, contaminant == "TRUE")
   ```
@@ -254,7 +263,7 @@ ps.pa.pos <- prune_samples(sample_data(ps.pa)$Sample_or_Control == "True sample"
 ... and then make a data.frame of prevalence in positive and negative samples
  ```
 df.pa <- data.frame(pa.pos=taxa_sums(ps.pa.pos), pa.neg=taxa_sums(ps.pa.neg),
-                    contaminant=contam_prev055$contaminant)
+                    contaminant=contam_prev05$contaminant)
  ```
 The prevalence can be plotted as follows
  ```
@@ -273,6 +282,13 @@ ggsave(filename = "Plot_prevalence.pdf",
        width = 15 , height = 10, units = "cm", 
        path = "./1_Data_prep_results")
  ```
+
+<details>
+  <summary>See figure</summary>
+  
+![alt text](1_Data_prep_results/Plot_prevalence.png)
+
+</details>
 
 We can finally make our phyloseq object without these contaminants
  ```
