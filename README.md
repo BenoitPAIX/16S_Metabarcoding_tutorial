@@ -1010,3 +1010,129 @@ The residual variance unexplained reach 70%
 
 </details>
 
+
+## 6. Compositional analyses
+
+
+For compositional analyses, I have a personal preference for barplots instead of heatmaps or bubble plots, as I find difficult to compare different values just based on a colors (for the heatmaps) are circle area (bubble plots). 
+
+One of the difficult parts of the compositional representation is related to the high number of variables. Of course, making barplots at the ASVs or genus level will make the figure very messy, with too many variables. One solution is to make barplots at the family levels, and combine all the rare families into a single group named "others". 
+
+For this aggregation of the dataset at the family level we can use the microbiome package, to make a new phyloseq object with families instead of ASVs. 
+
+We can combine all rare families below 3% together with the detection threshold
+
+```
+physeq_aggreg <- aggregate_rare(physeq_compo, level = "Family", detection = 3/100, prevalence = 0/100)
+physeq_aggreg
+```
+
+Let's have a closer look at this phyloseq object, especially with the different families to plot
+
+```
+ntaxa(physeq_aggreg)
+tax_table_family = as.data.frame(tax_table(physeq_aggreg))
+tax_table_family$Family
+
+```
+
+We can create a color vector, based on the affiliation of the families. For example different orange colors for Bacteroidetes, green colors for Gammaproteobacteria and blue colors for Alphaproteobacteria
+
+
+```
+color_families =  c( "Bacteria | Actinobacteria | Acidimicrobiia | Microtrichales | Microtrichaceae"="darkslateblue",                   
+                   "Bacteria | Actinobacteria | Actinobacteria | Micrococcales | Intrasporangiaceae",                 
+                   "Bacteria | Bacteroidetes | Bacteroidia | Chitinophagales | Saprospiraceae"="#FF914D",                       
+                   "Bacteria | Bacteroidetes | Bacteroidia | Chitinophagales | unknown family"="#FFBD59",                       
+                   "Bacteria | Bacteroidetes | Bacteroidia | Cytophagales | Amoebophilaceae"="#FF8200",                         
+                   "Bacteria | Bacteroidetes | Bacteroidia | Cytophagales | Cyclobacteriaceae"="#FFC78E",                       
+                   "Bacteria | Bacteroidetes | Bacteroidia | Flavobacteriales | Flavobacteriaceae"="#FFE38E",                   
+                   "Bacteria | Bacteroidetes | Bacteroidia | Sphingobacteriales | NS11-12 marine group"="#E8B374",              
+                   "Bacteria | Chloroflexi | Anaerolineae | Anaerolineales | Anaerolineaceae"="#FF66C4",                        
+                   "Bacteria | Chloroflexi | Anaerolineae | Ardenticatenales | unknown family"="#FFAEE0",                       
+                   "Bacteria | Chloroflexi | Anaerolineae | Caldilineales | Caldilineaceae"="#E4299C",                    
+                   "Bacteria | Cyanobacteria | Oxyphotobacteria | Nostocales | Nostocaceae"="#FF3131",                          
+                   "Bacteria | Cyanobacteria | Oxyphotobacteria | Nostocales | unknown family"="#C20F0F",                       
+                   "Bacteria | Cyanobacteria | Oxyphotobacteria | Nostocales | Xenococcaceae"="#FD8181",                        
+                   "Bacteria | Cyanobacteria | Oxyphotobacteria | Phormidesmiales | Phormidesmiaceae"="#F60000",                
+                   "Bacteria | Cyanobacteria | Oxyphotobacteria | Synechococcales | Synechococcales Incertae Sedis"="#B40202", 
+                   "Bacteria | Firmicutes | Clostridia | Clostridiales | Ruminococcaceae"="#D9D9D9", 
+                   "Bacteria | Planctomycetes | Planctomycetacia | Pirellulales | Pirellulaceae"="#FFF847",                     
+                   "Bacteria | Proteobacteria | Alphaproteobacteria | Caulobacterales | Hyphomonadaceae"="#0097B2",             
+                   "Bacteria | Proteobacteria | Alphaproteobacteria | Micavibrionales | unknown family"="#0CC0DF",              
+                   "Bacteria | Proteobacteria | Alphaproteobacteria | Rhizobiales | Hyphomicrobiaceae"="#5CE1E6",   
+                   "Bacteria | Proteobacteria | Alphaproteobacteria | Rhizobiales | Rhizobiaceae"="#38B6FF",     
+                   "Bacteria | Proteobacteria | Alphaproteobacteria | Rhodobacterales | Rhodobacteraceae"="#5271FF",         
+                   "Bacteria | Proteobacteria | Alphaproteobacteria | Rhodovibrionales | Kiloniellaceae"="#004AAD",     
+                   "Bacteria | Proteobacteria | Alphaproteobacteria | Sphingomonadales | Sphingomonadaceae"="#00FFE8",          
+                   "Bacteria | Proteobacteria | Alphaproteobacteria | unknown order | unknown family"="#0D00FF", 
+                   "Bacteria | Proteobacteria | Deltaproteobacteria | Bdellovibrionales | Bacteriovoracaceae"="yellow",        
+                   "Bacteria | Proteobacteria | Gammaproteobacteria | Alteromonadales | Alteromonadaceae"="#C1FF72",            
+                   "Bacteria | Proteobacteria | Gammaproteobacteria | Alteromonadales | Shewanellaceae"="#7ED957", 
+                   "Bacteria | Proteobacteria | Gammaproteobacteria | Cellvibrionales | Cellvibrionaceae"="#00BF63",     
+                   "Bacteria | Proteobacteria | Gammaproteobacteria | Cellvibrionales | Spongiibacteraceae"="#217F4D",          
+                   "Bacteria | Proteobacteria | Gammaproteobacteria | Ectothiorhodospirales | Ectothiorhodospiraceae"="#5EFFA8",
+                   "Bacteria | Proteobacteria | Gammaproteobacteria | Pseudomonadales | Pseudomonadaceae"="#B5E8A6",            
+                   "Bacteria | Proteobacteria | Gammaproteobacteria | Thiohalorhabdales | Thiohalorhabdaceae"="#48FFAD",        
+                   "Bacteria | Proteobacteria | Gammaproteobacteria | Thiotrichales | Thiotrichaceae"="#57FF48",                
+                   "Bacteria | Verrucomicrobia | Verrucomicrobiae | Verrucomicrobiales | DEV007"="#9D784D",     
+                   "Bacteria | Verrucomicrobia | Verrucomicrobiae | Verrucomicrobiales | Rubritaleaceae"="#724C1F",             
+                   "None | unknown | unknown | unknown | unknown"="#A6A6A6",                                                    
+                   "Other"="gray" )
+```
+
+Now, let's make a modified version of the plot_bar function from phyloseq to remove the borders of each barplot
+
+See: https://stackoverflow.com/questions/52747802/how-to-remove-very-thin-bar-plot-outline-border
+
+```
+plot_bar_2 <-  function (physeq, x = "Sample", y = "Abundance", fill = NULL, title = NULL, facet_grid = NULL, border_color = NA) 
+{
+  mdf = psmelt(physeq)
+  p = ggplot(mdf, aes_string(x = x, y = y, fill = fill))
+  p = p + geom_bar(stat = "identity", position = "stack",  color = border_color)
+  p = p + theme(axis.text.x = element_text(angle = -90, hjust = 0))
+  if (!is.null(facet_grid)) {
+    p <- p + facet_grid(facet_grid)
+  }
+  if (!is.null(title)) {
+    p <- p + ggtitle(title)
+  }
+  return(p)
+}
+
+```
+
+We can now make the barplots at the family level
+
+
+```
+barplot_family = plot_bar_2(physeq_aggreg, "Month_site_replicate", fill = "Family")
+barplot_family = barplot_family + facet_grid(~Site_code + Month_code, scales = "free", space="free") 
+barplot_family = barplot_family + scale_fill_manual(values = color_families)
+barplot_family = barplot_family + theme(legend.text = element_text(size=9),
+                                    axis.text.x = element_blank(),
+                                    legend.title = element_blank(),
+                                    axis.ticks.x=element_blank(), 
+                                    axis.title = element_blank())
+barplot_family = barplot_family + guides (fill = guide_legend(ncol = 1)) 
+barplot_family
+barplot_family = barplot_family + theme(panel.spacing = unit(0, "cm", data = NULL),panel.border = element_rect(color = "black", fill = NA, size = 0.9))
+barplot_family = barplot_family +scale_y_continuous(expand = c(0,0))
+barplot_family
+
+ggsave(filename = "Barplot_family.pdf", 
+       plot = barplot_family, 
+       device = "pngf" , 
+       width = 40 , height = 20, units = "cm", 
+       path = "./4_Compositional_results")
+
+```
+
+<details>
+  <summary>See figure</summary>
+  
+![alt text](4_Compositional_results/Barplot_family.png)
+
+</details>
+
