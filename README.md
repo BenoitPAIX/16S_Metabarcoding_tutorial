@@ -980,6 +980,33 @@ ggsave(filename = "Plot_rda.pdf",
 
 </details>
 
-
-
 ### 5.6. Variance partitioning
+
+The variance partitioning analysis allows you to determine the relative contribution of each environmental parameters (or group of parameters) as explanatory factors of the beta-diversity variance. 
+
+As for the db-RDA, we will perform the analysis first with vegan using the distance matrix and the metadata
+
+```
+varpart_result <- varpart(data_distbeta, ~ Temperature + Salinity, ~Cu_F, ~PO4 + NO3, data=metadata_subsampled)
+varpart_result
+showvarparts(3, bg=2:4)
+plot(varpart_result, bg=2:4)
+```
+
+<details>
+  <summary>See figure and interpretation</summary>
+  
+![alt text](3_Beta_div_results/Plot_varpart.png)
+
+X1 corresponds to temperature and salinity together
+
+X2 corresponds to the copper-filtered
+
+X3 corresponds to phosphate and silicates
+
+The results on the venn diagrams indicate the percentage explained by each group, independently or combined. 
+
+The residual variance unexplained reach 70%
+
+</details>
+
