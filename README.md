@@ -1011,8 +1011,9 @@ The residual variance unexplained reach 70%
 </details>
 
 
-## 6. Compositional analyses
+## 6. Compositional and differential analyses
 
+### 6.1. Barplots at the family level
 
 For compositional analyses, I have a personal preference for barplots instead of heatmaps or bubble plots, as I find difficult to compare different values just based on a colors (for the heatmaps) are circle area (bubble plots). 
 
@@ -1133,6 +1134,91 @@ ggsave(filename = "Barplot_family.pdf",
   <summary>See figure</summary>
   
 ![alt text](4_Compositional_results/Barplot_family.png)
+
+</details>
+
+
+
+### 6.2. Differential analyses
+
+Coming soon. See DeSeq2, LEfSe or Metacoder
+
+
+## 7. Core community analyses
+
+The core community is defined as the part of the microbial community always present in a group of samples, whatever the changes. 
+
+In this study, we will focus on the spatial-temporal core community, always present whatever the site or the month. 
+
+
+## 7.1. Choosing the prevalence threshold and preparing a new phyloseq object
+
+We can use the microbiome package to make a new phyloseq object specifically subsetting this core community. 
+
+A prevalence threshold of 90% will allow to keep ASVs present at least in 90% of the samples. All others ASVs (not core) will be excluded from the dataset. 
+
+The choice of this threshold depends on your dataset (the relation between your samples) and the number of samples
+
+```
+physeq_core <- core(physeq_compo, detection = 0.01/100, prevalence = 90/100)  ##phyloseq object of the core microbiota is obtained 
+physeq_core
+```
+
+How many core ASVs do we have in total? In which class are they mainly affiliated?
+
+<details>
+  <summary>See the answer</summary>
+
+```
+ntaxa(physeq_core)
+tax_table(physeq_core)
+```
+63 core ASVs in total, mostly affiliated to Alpha- and Gammaproteobacteria, and Bacteroidia
+
+</details>
+
+
+### 7.2. Plotting the relative abundance of the core community using barplots
+
+The relative abundance of sequences you core ASV can be plotted using barplots at the family level. 
+
+As there is only 63 core ASVs, the plots could also be plotted the genus level and might not be too dense. 
+
+
+```
+physeq_core_family = tax_glom(physeq_core, taxrank = "Family")
+physeq_core_family
+
+barplot_core_family = plot_bar_2(physeq_core_family, "Month_site_replicate", fill = "Family") + theme_bw()
+barplot_core_family = barplot_core_family + geom_bar(stat = "identity" , position="stack")
+barplot_core_family = barplot_core_family + theme(legend.text = element_text(size=9),
+                          axis.ticks.y = element_blank(),
+                          legend.position="right",
+                          axis.text.x = element_blank(),
+                          legend.title = element_blank(),
+                          axis.ticks.x=element_blank(), 
+                          axis.title = element_blank())
+barplot_core_family = barplot_core_family + scale_fill_manual(values = color_families)
+barplot_core_family = barplot_core_family + facet_grid(~Site_code + Month_code, scales = "free", space = "free")
+barplot_core_family =  barplot_core_family + guides(fill = guide_legend(ncol = 1))
+barplot_core_family =  barplot_core_family + theme(axis.title = element_blank())
+barplot_core_family = barplot_core_family  + theme(panel.spacing = unit(0, "cm", data = NULL),panel.border = element_rect(color = "black", fill = NA, size = 1))
+barplot_core_family = barplot_core_family + scale_y_continuous(expand = c(0,0))
+barplot_core_family
+
+
+ggsave(filename = "Barplot_coreASVs_familylevel.pdf", 
+       plot = barplot_core_family, 
+       device = "pdf" , 
+       width = 40 , height = 20, units = "cm", 
+       path = "./5_Core_community_results")
+
+```
+
+<details>
+  <summary>See figure</summary>
+  
+![alt text](5_Core_community_results/Barplot_coreASVs_familylevel.png)
 
 </details>
 
