@@ -1151,7 +1151,7 @@ The core community is defined as the part of the microbial community always pres
 In this study, we will focus on the spatial-temporal core community, always present whatever the site or the month. 
 
 
-## 7.1. Choosing the prevalence threshold and preparing a new phyloseq object
+### 7.1. Choosing the prevalence threshold and preparing a new phyloseq object
 
 We can use the microbiome package to make a new phyloseq object specifically subsetting this core community. 
 
