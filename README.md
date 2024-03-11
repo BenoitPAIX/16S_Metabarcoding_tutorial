@@ -178,7 +178,7 @@ Check how many ASVs and samples you have in total
 ntaxa(physeq_raw)
 nsamples(physeq_raw)
   ```
-We have XXX ASVs in total and XXX samples
+We have 1181 ASVs in total and 81 samples
 </details>
 
 Check how many ASVs per sample you have 
@@ -193,7 +193,7 @@ min(taxa_sums(physeq_raw))
 max(taxa_sums(physeq_raw))
 mean(taxa_sums(physeq_raw))
   ```
-We have around XXX ASVs on average. XX in max, and XX in min (probably an extraction blank or negative control) 
+We have around 652 ASVs on average. 53107 in max, and 81 in min (probably an extraction blank or negative control) 
 </details>
 
 ### 2.2. Decontaminate your dataset using the decontam package (output: physeq_decontam)
