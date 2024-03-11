@@ -740,20 +740,179 @@ Just copy-paste the same script and replace the index name using ctrl+F !!
 
 ### 5.1. Create a phyloseq compositional objects specifically for beta-div and compositional analyses
 
+We need now to create a phyloseq object without rarefaction. Instead, the dataset will be transformed into compositional values. 
+
+```
+physeq_compo <- transform(physeq_subsampled, "compositional")   
+physeq_compo
+```
+
+How the data look like in the ASV_table now ? What is the sum of all ASVs in a sample ?
+
+<details>
+  <summary>See the answer</summary>
+  
+```
+otu_table(physeq_compo)
+sample_sums(physeq_compo)
+```
+All values are now in percentage (100% --> 1)
+</details>
+
 
 ### 5.2. Consider the factors of comparison for this analysis and prepare your color and shape vectors
 
-### 5.3. NMDS analysis and beta-diversity tests
+We want to keep the same color code used in the alpha-diversity analysis
 
-#### 5.3.1. Create a data frame with the results of the NMDS analysis
+```
+color_months = c("Violet","SkyBlue", "LightGreen", "Yellow", "Orange", "Red")
+```
 
+But for the site, we want to distinguish them based on another  graphical option. Let's use different pch shapes for the geom_point. 
 
-#### 5.3.2. Plot your NMDS analysis
+```
+shape_sites = c(21,22,23,24,25)
+```
+
+### 5.3. NMDS analysis
+
+We can now make our NMDS analysis with all samples, and calculate the 2D stress.
+
+```
+nmds <- ordinate(physeq_compo, "NMDS", "bray")
+nmds$stress
+```
+
+We can create a data frame with the coordinates of the two NMDS axes. 
+
+```
+data_nmds <- plot_ordination(physeq_compo, nmds, type = "Samples", justDF = TRUE)
+data_nmds
+```
+
+Now, let's plot the NMDS analysis
+
+```
+plot_nmds = ggplot(data_nmds, aes(x = NMDS1, y = NMDS2))
+plot_nmds = plot_nmds + geom_point(aes(fill = Month, pch = Site), size = 5, alpha = 0.8)
+plot_nmds = plot_nmds + scale_shape_manual(values = shape_sites)
+plot_nmds = plot_nmds + scale_fill_manual(values = color_months)
+plot_nmds = plot_nmds + theme_bw(base_size = 15)+ theme(plot.title = element_text(size=22, face="bold"), axis.text=element_text(size=12),axis.title=element_text(size=14))
+plot_nmds = plot_nmds + guides(fill = guide_legend(override.aes = list(shape = 21, size = 7)))
+plot_nmds = plot_nmds + annotate("text", label="2D Stress = 0.16", x = -1, y = 1)
+plot_nmds
+
+ggsave(filename = "Plot_NMDS.pdf", 
+       plot = plot_nmds, 
+       device = "pdf" , 
+       width = 30 , height = 20, units = "cm", 
+       path = "./3_Beta_div_results")
+```
+<details>
+  <summary>See figure</summary>
+  
+![alt text](3_Beta_div_results/Plot_NMDS.png)
+
+</details>
+
+### 5.5 Multivariate test to test the effect of each factor on the overall variance of the beta-diversity
+
+Let's calculate the dissimilarity matrix between every sample
+
+```
+data_distbeta = as.matrix(distance(physeq_compo, method="bray"))
+data_distbeta
+```
+
+Let's check again the metadata
+
+```
+metadata_subsampled <- as(sample_data(physeq_compo), "data.frame")
+metadata_subsampled
+```
+We have two factors of comparison that can interact each other (Month and Site). So a two-way PERMANOVA test (aka two-way Adonis test) is required. 
+
+```
+data_permnova = adonis2(data_distbeta ~ Month*Site, data = metadata_subsampled)
+data_permnova
+
+write.csv(as.data.frame(data_permnova), 
+          file.path("./3_Beta_div_results" , "Data_twoway_permnova.csv"))
+ 
+```
+Conclusion: there are significant differences according to the sampling time and site. Both factors are interacting each other in a significant way. 
+
+We can now perform multivariate pairwise comparison to check which months are different from each other. Same for the sites. 
+
+```
+data_pairwiseadonis_month = pairwise.adonis(data_distbeta, metadata_subsampled$Month)
+data_pairwiseadonis_month
+
+write.csv(data_pairwiseadonis_month, 
+          file.path("./3_Beta_div_results" , "Pairwise_adonis_month.csv"))
+
+data_pairwiseadonis_site = pairwise.adonis(data_distbeta, metadata_subsampled$Site)
+data_pairwiseadonis_site
+
+write.csv(data_pairwiseadonis_month, 
+          file.path("./3_Beta_div_results" , "Pairwise_adonis_site.csv"))
+
+```
 
 ### 5.4. Beta-diversity dispersion analysis 
 
-### 5.5. Environmental parameters as explanatory factors of the beta-diversity
+The beta-diversity dispersion analysis allows you to calculate the dispersion within groups of samples. It can help to confirm visual observation based on the NMDS plots, when you observe that some groups have replicates more dispersed than others. 
 
-### 5.5.1. db-RDA analysis 
+Let's calculate the beta-dispersion based on the distance to centroids within each group (1 group of replicate is a sampling at a specific time on the specific site) 
 
-### 5.5.2. Variance partitioning
+```
+betadisper_result <- betadisper(distance(physeq_compo, method="bray"), data_nmds$Month_site)
+betadisper_result
+
+dist_centroid = betadisper_result$distances
+dist_centroid
+```
+
+We can now combine these results with the metadata and plot these distances to centroids for 
+
+```
+plot_betadisper = ggplot(data_betadisper, aes(x = Month_code, y = dist_centroid))
+plot_betadisper = plot_betadisper + geom_point(aes(pch = Site, fill = Month), size = 2, alpha = 0.8, pch = 21)
+plot_betadisper = plot_betadisper + geom_boxplot(aes(fill = Month), alpha = 0.8, size = 0.8)
+plot_betadisper = plot_betadisper + facet_grid(Site~., scales = "free")
+plot_betadisper = plot_betadisper + scale_fill_manual(values = color_months)
+plot_betadisper = plot_betadisper + theme_bw(base_size = 15)  + theme(legend.position="left")
+plot_betadisper = plot_betadisper + scale_shape_manual(values = c(21,22,23,24,25))
+plot_betadisper = plot_betadisper + theme(axis.title.x = element_blank(),axis.title.y = element_blank())
+plot_betadisper = plot_betadisper + theme(axis.text.x = element_text(angle=45, vjust = 1, hjust = 1))
+plot_betadisper
+
+ggsave(filename = "Plot_betadisper.pdf", 
+       plot = plot_betadisper, 
+       device = "pdf" , 
+       width = 15 , height = 30, units = "cm", 
+       path = "./3_Beta_div_results")
+
+```
+<details>
+  <summary>See figure</summary>
+  
+![alt text](3_Beta_div_results/Plot_betadisper.png)
+
+</details>
+
+Ok, what about the statistical differences? 
+
+<details>
+  <summary>See the answer</summary>
+
+You can use the same script as the stats for the alpha-diversity !
+
+</details>
+
+
+### 5.5. db-RDA analysis to indentify environmental parameters as explanatory factors of the beta-diversity
+
+
+
+### 5.6. Variance partitioning
