@@ -121,7 +121,7 @@ ASV_table = read.csv(file = "ASV_table.csv" , header = TRUE , sep = ";" , row.na
 dim(ASV_table)
 
 TAX_table = read.csv(file = "Taxonomy_table.csv" , sep = ";" , header = T , row.names = 1)
-TAX_table = as.data.frame(TAX_table)
+TAX_table = as.matrix(TAX_table)
 dim(TAX_table)
 
 META_table = read.csv(file = "Metadata_table.csv" , header = TRUE , sep = ";" , row.names = 1)
