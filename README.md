@@ -61,6 +61,8 @@ install.packages('devtools')
 library(devtools)
 install_github("pmartinezarbizu/pairwiseAdonis/pairwiseAdonis")
 install.packages(“ape”)
+install.packages("rcompanion")
+install.packages("multcompView")
 ```
 
 ### 1.3 Packages loading
@@ -88,6 +90,8 @@ library(rcompanion)
 library(pairwiseAdonis) 
 library(ggpubr)
 library(ggh4x)
+library(rcompanion) ###
+library(multcompView) ##
 ```
 
 ### 1.4 Setting and preparing your working directory
@@ -292,7 +296,7 @@ ggsave(filename = "Plot_prevalence.pdf",
 
 We can finally make our phyloseq object without these contaminants
  ```
-physeq_decontam = prune_taxa(!contamdf.prev05$contaminant, physeq_raw)
+physeq_decontam = prune_taxa(!contam_prev05$contaminant, physeq_raw)
 physeq_decontam
  ```
 Do you confirm that the good number of contaminating ASVs has been removed ? 
@@ -303,7 +307,7 @@ Do you confirm that the good number of contaminating ASVs has been removed ?
 ntaxa(physeq_raw)
 ntaxa(physeq_decontam)
   ```
-yes, 23 ASVs were removed!
+yes, 5 ASVs were removed!
 </details>
 
 
@@ -326,7 +330,7 @@ How many non-prokaryotic ASVs were filtered in total?
   ```
 ntaxa(physeq_decontam) - ntaxa(physeq_filtered)
   ```
-1002 ASVs in total
+14 ASVs in total
 </details>
 
 ### 2.4. Checking the rarefaction curves and removing samples with not enough reads 
@@ -342,6 +346,16 @@ as.data.frame(t(otu_table(physeq_filtered)))
 rarecurve(as.data.frame(t(otu_table(physeq_filtered))), step = 20, cex = 0.5)
 #save manually the plot to ./1. Data_prep results
   ```
+
+<details>
+  <summary>See figure</summary>
+  
+![alt text](1_Data_prep_results/Rarefaction_curves.png)
+
+</details>
+
+
+
 Future update soon with the package [inext](https://johnsonhsieh.github.io/iNEXT/)
 
 Based on these rarefaction curves we can now set a minimum reads threshold. 
@@ -351,7 +365,7 @@ The samples below this threshold will be excluded from our analysis, as the sequ
 
   ```
 min_reads_threshold = 2000
-physeq_subsampled = prune_samples(sample_sums(physeq_filtered)>=10000, physeq_filtered)
+physeq_subsampled = prune_samples(sample_sums(physeq_filtered)>=min_reads_threshold, physeq_filtered)
 physeq_subsampled
   ```
 With this code, we also remove the negative controls and extraction blanks. 
@@ -363,7 +377,7 @@ How many samples were removed in total ?
   ```
 nsamples(physeq_filtered) - nsamples(physeq_subsampled)
   ```
-xxx samples in total (including the negative controls and extractions blanks)
+3 samples in total (only the negative controls and extractions blanks, in this case)
 
 </details>
 
@@ -436,7 +450,7 @@ How many ASVs per sample do we end up with?
   ```
 sample_sums(physeq_subsampled)
   ```
-10073 ASVs per sample
+2674 ASVs per sample
 
 </details>
 
@@ -457,14 +471,14 @@ What factor of interest is important to compare in this dataset? How many levels
 - For the temporal changes: the sampling date
 
 ```
-factor(metadata_subsampled$Sampling_date)
+factor(metadata_subsampled$Month)
 ```
 We have 6 distinct sampling dates
 
 - For the spatial comparison: the sampling site
 
 ```
-factor(metadata_subsampeld$Sampling_site)
+factor(metadata_subsampled$Site)
 ```
 We have 5 distinct sampling sites
 
@@ -475,19 +489,15 @@ Let's create the color vector for the sampling dates.
 For temporal changes, I like to have my colors changing gradually from a cold color for the cold months, to hot colors for the warmer months
 
 ```
-color_months = c("M1 February" = "Violet",
-                 "M2 March" = "SkyBlue",
-                 "M3 April" = "LightGreen",
-                 "M4 May" = "Yellow",
-                 "M5 June" = "Orange",
-                 "M6 July" = "Red")
+color_months = c("Violet","SkyBlue", "LightGreen", "Yellow", "Orange", "Red")
+
 ```
 
 ### 4.3. Create a data frame with the results of the alpha-diversity indices and the metadata
 
-The function estimate_richness allow you to calculate many different alpha-diversity indices. 
+The function estimate_richness allows you to calculate many different alpha-diversity indices. 
 
-Here we will keep only the observed richness, the Shannon index and the Chao1 (estimated richness)
+Here we will keep only the observed richness, the Shannon index, and the Chao1 (estimated richness)
 
 ```
 data_alpha = estimate_richness(physeq_rarefied , measures = c("Observed", "Shannon", "Chao1"))
@@ -502,18 +512,18 @@ Pielou
 
 We can now add the Pielou index and the factors of interest in the data frame
 ```
-data_alpha_all = cbind(metadata_subsampled[, c("Sampling_site","Sampling_date")], data_alpha , Pielou)
+data_alpha_all = cbind(metadata_subsampled[, c("Site","Month","Site_code","Month_code")], data_alpha , Pielou)
 data_alpha_all
 ```
 
-What if I don't want to include all the samples in my analysis? (just only 3 of the 6 months for example)
+What if I don't want to include all the samples in my analysis? (just only the site S1 for example)
 
 <details>
   <summary>See the answer</summary>
 To plot your alpha diversity results if you want to include just a specific selection of samples, use the subset function
 
 ```
-data_alpha_all_subset = subset(data_alpha_all, Sample_type == "3. Cultivated sponges" | Sample_type == "2. Gemmules"  )
+data_alpha_all_subset = subset(data_alpha_all, Site_code == "S1"  )
 data_alpha_all_subset 
 ```
 
@@ -524,39 +534,207 @@ data_alpha_all_subset
 To have the three diversity indices (Shannon, Chao1 and Pielou) in different facets, we need to re-arrange the data.frame with a single column for all values
 
 ```
-data_alpha_bgs_long = melt(data_alpha_bgs, id.var=c("Region_site"))
-colnames(data_alpha_bgs_long) <- c("Region_site", "Index", "Values")
-data_alpha_bgs_long
+data_long = melt(data_alpha_all, id.var=c("Site","Month","Site_code","Month_code"))
+data_long
 ```
 
 We can now make boxplots using ggplot2 with facet_grid for the figure
-```
-plot_alpha_bgs = ggplot(data_alpha_bgs_long, aes(Region_site ,Values, fill = Region_site))
-plot_alpha_bgs = plot_alpha_bgs + geom_boxplot(alpha = 0.8, size = 1) + facet_grid(  Index ~ ., scales="free") 
-plot_alpha_bgs = plot_alpha_bgs + geom_point(size = 2, alpha = 0.8, pch = 21, stroke = 1)
-plot_alpha_bgs = plot_alpha_bgs + theme_bw(base_size = 15) 
-plot_alpha_bgs = plot_alpha_bgs + theme(legend.position="left")
-plot_alpha_bgs = plot_alpha_bgs + theme(axis.title.x = element_blank(),axis.title.y = element_blank())
-plot_alpha_bgs = plot_alpha_bgs + theme(axis.text.x = element_text(angle=45, vjust = 1, hjust = 1))
-plot_alpha_bgs = plot_alpha_bgs + scale_fill_manual(values = colorpal_site)
-plot_alpha_bgs
 
-ggsave(filename = "Plot_alpha_Q1.pdf", 
-       plot = plot_alpha_Q1, 
+```
+plot_alpha_all = ggplot(data_long, aes(x = Month_code, y = value))
+plot_alpha_all = plot_alpha_all + geom_point(aes(pch = Site, fill = Month), size = 2, alpha = 0.8, pch = 21)
+plot_alpha_all = plot_alpha_all + geom_boxplot(aes(fill = Month), alpha = 0.8, size = 0.8)
+plot_alpha_all = plot_alpha_all + scale_fill_manual(values = color_months)
+plot_alpha_all = plot_alpha_all + theme_bw(base_size = 15)  + theme(legend.position="left")
+plot_alpha_all = plot_alpha_all + facet_grid(variable~Site, scales = "free")
+plot_alpha_all = plot_alpha_all + scale_shape_manual(values = c(21,22,23,24,25))
+plot_alpha_all = plot_alpha_all + theme(axis.title.x = element_blank(),axis.title.y = element_blank())
+plot_alpha_all = plot_alpha_all +theme(axis.text.x = element_text(angle=45, vjust = 1, hjust = 1))
+plot_alpha_all
+
+
+ggsave(filename = "Plot_alpha_all.pdf", 
+       plot = plot_alpha_all, 
        device = "pdf" , 
-       width = 15 , height = 25, units = "cm", 
+       width = 35 , height = 25, units = "cm", 
        path = "./2_Alpha_div_results")
 ```
+<details>
+  <summary>See figure</summary>
+  
+![alt text](2_Alpha_div_results/Plot_alpha_all.png)
+
+</details>
 
 
 
 ### 4.5. Test the normality of your distribution for each index
 
+```
+shapiro_data_shannon = shapiro.test(data_alpha_all$Shannon)
+shapiro_data_shannon
+
+shapiro_data_chao1 = shapiro.test(data_alpha_all$Chao1)
+shapiro_data_chao1
+
+shapiro_data_pielou = shapiro.test(data_alpha_all$Pielou)
+shapiro_data_pielou
+```
+
+Let's make a table summarizing these results
+
+```
+shapiro_data_alpha <- matrix(nrow = 3 ,  ncol=2, byrow=TRUE)
+colnames(shapiro_data_alpha) = c("W","p-value")
+rownames(shapiro_data_alpha) = c("Shannon","Chao1","Pielou")
+
+shapiro_data_alpha[,1] <- c(shapiro_data_shannon$statistic,
+                               shapiro_data_chao1$statistic,
+                               shapiro_data_pielou$statistic)
+
+shapiro_data_alpha[,2]<- c(shapiro_data_shannon$p.value,
+                           shapiro_data_chao1$p.value,
+                           shapiro_data_pielou$p.value)
+
+shapiro_data_alpha
+
+write.csv(shapiro_data_alpha, file.path("./2_Alpha_div_results" , "Shapiro_data_alpha.csv"))
+
+```
+Based on these results, all p values are < 0.05, implying that the distribution of the data is significantly different from normal distribution. 
+
+In other words, we cannot assume the normality. The Kruskal-wallis test need to be used (instead of a parametric ANOVA)
+
 
 ### 4.6. Test the differences of alpha-diversity according to your factors with analyses of variances
 
+Let's test the differences between months and sites, with the Kruskal-Wallis test
+
+```
+data_kruskal_Shannon_month = kruskal.test(Shannon ~ Month, data_alpha_all)
+data_kruskal_Shannon_month 
+
+data_kruskal_Chao1_month = kruskal.test(Chao1 ~ Month, data_alpha_all)
+data_kruskal_Chao1_month 
+
+data_kruskal_Pielou_month = kruskal.test(Pielou ~ Month, data_alpha_all)
+data_kruskal_Pielou_month 
+```
+We can now create a table summarizing these informations all together
+
+```
+data_kruskal_alpha_month  <- matrix(nrow = 3 ,  ncol=3, byrow=TRUE)
+colnames(data_kruskal_alpha_month) = c("Chi-square","Df","p-value")
+rownames(data_kruskal_alpha_month) = c("Shannon","Chao1","Pielou")
+
+data_kruskal_alpha_month
+
+data_kruskal_alpha_month[,1] <- c(data_kruskal_Shannon_month$statistic,
+                                  data_kruskal_Chao1_month$statistic,
+                                  data_kruskal_Pielou_month$statistic)
+
+data_kruskal_alpha_month[,2]<- c(data_kruskal_Shannon_month$parameter,
+                                 data_kruskal_Chao1_month$parameter,
+                                 data_kruskal_Pielou_month$parameter)
+
+data_kruskal_alpha_month[,3]<- c(data_kruskal_Shannon_month$p.value,
+                                 data_kruskal_Chao1_month$p.value,
+                                 data_kruskal_Pielou_month$p.value)
+
+data_kruskal_alpha_month
+
+write.csv(data_kruskal_alpha_month, file.path("./2_Alpha_div_results" , "Data_kruskal_alpha_month.csv"))
+```
+Conclusion: For each alpha-diversity index, there is significant differences across time.
+
+What about the spatial differences?
+
+<details>
+  <summary>See the answer</summary>
+
+```
+data_kruskal_Shannon_site = kruskal.test(Shannon ~ Site, data_alpha_all)
+data_kruskal_Shannon_site 
+
+data_kruskal_Chao1_site = kruskal.test(Chao1 ~ Site, data_alpha_all)
+data_kruskal_Chao1_site 
+
+data_kruskal_Pielou_site = kruskal.test(Pielou ~ Site, data_alpha_all)
+data_kruskal_Pielou_site 
+
+
+
+data_kruskal_alpha_site  <- matrix(nrow = 3 ,  ncol=3, byrow=TRUE)
+colnames(data_kruskal_alpha_site) = c("Chi-square","Df","p-value")
+rownames(data_kruskal_alpha_site) = c("Shannon","Chao1","Pielou")
+
+data_kruskal_alpha_site
+
+data_kruskal_alpha_site[,1] <- c(data_kruskal_Shannon_site$statistic,
+                                  data_kruskal_Chao1_site$statistic,
+                                  data_kruskal_Pielou_site$statistic)
+
+data_kruskal_alpha_site[,2]<- c(data_kruskal_Shannon_site$parameter,
+                                 data_kruskal_Chao1_site$parameter,
+                                 data_kruskal_Pielou_site$parameter)
+
+data_kruskal_alpha_site[,3]<- c(data_kruskal_Shannon_site$p.value,
+                                 data_kruskal_Chao1_site$p.value,
+                                 data_kruskal_Pielou_site$p.value)
+
+data_kruskal_alpha_site
+
+write.csv(data_kruskal_alpha_site, file.path("./2_Alpha_div_results" , "Data_kruskal_alpha_site.csv"))
+
+```
+Conclusion: for the three indices there is no differences between sites
+
+</details>
 
 ### 4.7. Test the differences between groups with pairwise comparisons
+
+Since we performed a Kruskal-Wallis test, we will now conduct a Wilcoxon test for the pairwise comparison between each month. 
+
+Let's try with the Shannon index
+```
+data_wilcox_shannon_month = pairwise.wilcox.test(data_alpha_all$Shannon, data_alpha_all$Month, p.adjust.method = "bonferroni")
+data_wilcox_shannon_month
+data_wilcox_shannon_month$p.value
+```
+
+We can now create a table summarizing these results. 
+This table should include the lowercase indices ("a", "b", "c", ...) allowing to easily identify the significant groups with the boxplots.
+
+```
+data_wilcox_shannon_month_full = fullPTable(data_wilcox_shannon_month$p.value)
+data_wilcox_shannon_month_full
+
+indices_wilcox_shannon_month = multcompLetters(data_wilcox_shannon_month_full,
+                                           compare="<",
+                                           threshold=0.05,
+                                           Letters=letters,
+                                           reversed = FALSE)
+indices_wilcox_shannon_month$Letters
+
+
+
+data_wilcox_shannon_month_full2 = cbind(data_wilcox_shannon_month_full, indices_wilcox_shannon_month$Letters )
+data_wilcox_shannon_month_full2
+
+write.csv(data_wilcox_shannon_month_full2, file.path("./2_Alpha_div_results" , "Data_wilcox_shannon_month.csv"))
+```
+
+Now let's do the same with the Pielou and the Chao1 indices !
+
+
+<details>
+  <summary>See the answer</summary>
+
+Just copy-paste the same script and replace the index name using ctrl+F !!
+
+</details>
+
+
 
 ## 5. Beta diversity analyses
 
