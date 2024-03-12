@@ -106,6 +106,7 @@ dir.create("1_Data_prep_results")
 dir.create("2_Alpha_div_results")
 dir.create("3_Beta_div_results")
 dir.create("4_Compositional_results")
+dir.create("5_Core_community_results")
 ```
 
 
@@ -1129,7 +1130,7 @@ barplot_family
 
 ggsave(filename = "Barplot_family.pdf", 
        plot = barplot_family, 
-       device = "pngf" , 
+       device = "pdf" , 
        width = 40 , height = 20, units = "cm", 
        path = "./4_Compositional_results")
 
