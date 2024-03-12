@@ -49,8 +49,9 @@ For data frame manipulations
 ```
 install.packages("stringi")
 install.packages("rlang")
-install.packages(Rcpp)
+install.packages("Rcpp")
 install.packages(“dplyr”)
+install.packages("reshape2")
 ```
 
 For additional statistical tests 
@@ -77,7 +78,8 @@ library(rlang)
 library(phyloseq)
 library(ape)
 library(dplyr)
-library(agricolae) 
+library(agricolae)
+library(reshape2)
 library(RVAideMemoire) 
 library(microbiome)
 library(hrbrthemes)
@@ -90,8 +92,8 @@ library(rcompanion)
 library(pairwiseAdonis) 
 library(ggpubr)
 library(ggh4x)
-library(rcompanion) ###
-library(multcompView) ##
+library(rcompanion)
+library(multcompView)
 ```
 
 ### 1.4 Setting and preparing your working directory
@@ -448,7 +450,7 @@ How many ASVs per sample do we end up with?
   <summary>See the answer</summary>
   
   ```
-sample_sums(physeq_subsampled)
+sample_sums(physeq_rarefied)
   ```
 2674 ASVs per sample
 
