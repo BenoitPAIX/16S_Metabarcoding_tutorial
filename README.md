@@ -878,6 +878,9 @@ dist_centroid
 We can now combine these results with the metadata and plot these distances to centroids for 
 
 ```
+data_betadisper = cbind(data_nmds, dist_centroid)
+data_betadisper
+
 plot_betadisper = ggplot(data_betadisper, aes(x = Month_code, y = dist_centroid))
 plot_betadisper = plot_betadisper + geom_point(aes(pch = Site, fill = Month), size = 2, alpha = 0.8, pch = 21)
 plot_betadisper = plot_betadisper + geom_boxplot(aes(fill = Month), alpha = 0.8, size = 0.8)
