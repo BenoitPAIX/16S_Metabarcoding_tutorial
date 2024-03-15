@@ -3,3 +3,4 @@
 3. update with the ASVs plotted on the NMDS and db-RDA
 4. update with the dendrogramm for the beta-div
 5. update with explanation of the different beta-div indices
+6. update with the session info
