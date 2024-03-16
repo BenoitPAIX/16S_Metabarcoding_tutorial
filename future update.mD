@@ -5,3 +5,4 @@
 5. update with explanation of the different beta-div indices
 6. update with the session info
 7. update with source tracker https://github.com/danknights/sourcetracker
+8. add the .R script file 
