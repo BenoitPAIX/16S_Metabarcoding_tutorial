@@ -7,4 +7,5 @@
 - update with source tracker https://github.com/danknights/sourcetracker
 - add the .R script file 
 - add names in venn diagramms. see plot (varp, digits = 2, Xnames = c('dose', 'cover'), bg = c('navy', 'tomato'))
+- use facet_nested()  from ggh4x package for spacing the nested panels in the barplots 
 
