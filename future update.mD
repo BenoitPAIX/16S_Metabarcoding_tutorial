@@ -8,4 +8,4 @@
 - add the .R script file 
 - add names in venn diagramms. see plot (varp, digits = 2, Xnames = c('dose', 'cover'), bg = c('navy', 'tomato'))
 - use facet_nested()  from ggh4x package for spacing the nested panels in the barplots 
-
+- add the line of script to remove the se.chao1 in the alpha-div figure
