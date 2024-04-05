@@ -1,5 +1,5 @@
 - update with differential analyses
-- update with the visualization of the data tables with the DF package (datatable function)
+- update with the visualization of the data tables with the DT package (datatable function)
 - update with the ASVs plotted on the NMDS and db-RDA
 - update with the dendrogram for the beta-div
 - update with an explanation of the different beta-div indices
